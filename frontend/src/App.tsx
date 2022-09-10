@@ -7,22 +7,12 @@ import { localizer, meetingToMeetingEvent } from "./utils";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./App.css";
-import {
-  Dialog,
-  Title,
-  Text,
-  Group,
-  TextInput,
-  Button,
-  Modal,
-  Stack,
-} from "@mantine/core";
-import { format } from "date-fns/esm";
+import { Title } from "@mantine/core";
+import EventCreationModal from "./components/EventCreationModal";
 
 function App() {
   const [meetings, setMeetings] = useState<MeetingEvent[]>([]);
   const [meetingToCreate, setMeetingToCreate] = useState<SlotInfo>();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchMeetings = useCallback(() => {
     fetch("/api/meetings")
@@ -31,32 +21,6 @@ function App() {
   }, []);
 
   useEffect(fetchMeetings, [fetchMeetings]);
-
-  const newMeeting = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const title = formData.get("title") as string;
-
-    if (meetingToCreate && title) {
-      setIsSubmitting(true);
-
-      fetch("/api/meetings", {
-        method: "POST",
-        body: JSON.stringify({
-          title,
-          from: meetingToCreate.start,
-          to: meetingToCreate.end,
-        }),
-        headers: { "Content-Type": "application/json" },
-      })
-        .then(() => {
-          fetchMeetings();
-          setMeetingToCreate(undefined);
-          setIsSubmitting(false);
-        })
-        .catch((error) => console.error(error));
-    }
-  };
 
   const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
     setMeetingToCreate(slotInfo);
@@ -78,42 +42,9 @@ function App() {
         selectable
       />
 
-      <Modal
-        opened={!!meetingToCreate}
-        withCloseButton={false}
-        onClose={() => setMeetingToCreate(undefined)}
-        size="lg"
-        radius="md"
-      >
-        <Group align="flex-end">
-          <Title order={2}>Please state the purpose of your meeting</Title>
-          {meetingToCreate && (
-            <div>
-              <Text>
-                <span style={{ fontWeight: "bold" }}>From:</span>{" "}
-                {format(meetingToCreate.start, "PPPPp")}
-              </Text>
-              <Text>
-                <span style={{ fontWeight: "bold" }}>To:</span>{" "}
-                {format(meetingToCreate.end, "PPPPp")}
-              </Text>
-            </div>
-          )}
-          <form onSubmit={newMeeting} style={{ width: "100%" }}>
-            <Stack>
-              <TextInput
-                name="title"
-                placeholder="I just want to say hi"
-                style={{ flex: 1 }}
-                required
-              />
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Create"}
-              </Button>
-            </Stack>
-          </form>
-        </Group>
-      </Modal>
+      <EventCreationModal
+        {...{ fetchMeetings, setMeetingToCreate, meetingToCreate }}
+      />
     </div>
   );
 }
