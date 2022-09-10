@@ -8,7 +8,7 @@ import {
 import * as dayjs from 'dayjs';
 import { MeetingsService } from './meetings/meetings.service';
 
-@Controller()
+@Controller('/api')
 export class AppController {
   constructor(private readonly meetingsService: MeetingsService) {}
 
@@ -21,6 +21,7 @@ export class AppController {
   postMeeting(
     @Body() { title, from, to }: { title: string; from: string; to: string },
   ) {
+    console.log('postMeeting', title, from, to);
     if (!title || !dayjs(from).isValid() || !dayjs(to).isValid()) {
       throw new BadRequestException('Invalid input');
     }
