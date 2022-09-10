@@ -26,6 +26,8 @@ export class AppController {
       throw new BadRequestException('Invalid input');
     }
 
+    // TODO: Create Zoom Link
+
     return this.meetingsService.create({
       title,
       from: dayjs(from).toDate(),
