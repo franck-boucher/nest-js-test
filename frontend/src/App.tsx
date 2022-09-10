@@ -1,8 +1,25 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
+import { useCallback, useEffect, useState } from "react";
+import { Calendar, SlotInfo } from "react-big-calendar";
+
+import { Meeting, MeetingEvent } from "./types";
+import { localizer, meetingToMeetingEvent } from "./utils";
+
+import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
+import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./App.css";
 
 function App() {
+  const [meetings, setMeetings] = useState<MeetingEvent[]>([]);
+
+  useEffect(() => {
+    console.log("FETCHING MEETINGS");
+    fetch("/api/meetings")
+      .then((res) => res.json())
+      .then((data: Meeting[]) => setMeetings(data.map(meetingToMeetingEvent)));
+  }, []);
+
+  console.log("meetings", meetings);
+
   const newMeeting = () => {
     const title = "Meeting 2";
     const from = "2021-09-01T10:00:00.000Z";
@@ -24,26 +41,21 @@ function App() {
       });
   };
 
+  const handleSelectSlot = useCallback(({ start, end }: SlotInfo) => {
+    console.log({ start, end });
+  }, []);
+
   return (
     <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={newMeeting}>new meeting</button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Calendar
+        localizer={localizer}
+        events={meetings}
+        startAccessor="start"
+        endAccessor="end"
+        style={{ height: 500 }}
+        onSelectSlot={handleSelectSlot}
+        selectable
+      />
     </div>
   );
 }
