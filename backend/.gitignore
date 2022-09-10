@@ -1,5 +1,10 @@
 .env
 
+# prisma
+/prisma/data.db
+/prisma/data.db-journal
+/prisma/dev.db
+
 # compiled output
 /dist
 /node_modules
